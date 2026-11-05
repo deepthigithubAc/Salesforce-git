@@ -1,0 +1,155 @@
+{
+   "checksum": "50ae74b68948a7ebe286c5db8c6fc671",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "date_added": "13393934422769017",
+            "date_last_used": "13407247864259547",
+            "guid": "a62451b0-e28d-427b-a0f5-af2ff57b7d9c",
+            "id": "9",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "Capgemini",
+            "type": "url",
+            "url": "https://talent.capgemini.com/in"
+         }, {
+            "date_added": "13393935439229122",
+            "date_last_used": "13400055817806112",
+            "guid": "6df7fc0a-da93-42f3-b608-6b6594f2a63a",
+            "id": "10",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "Replicon - Home",
+            "type": "url",
+            "url": "https://eu3.replicon.com/Capgemini/home/"
+         }, {
+            "children": [ {
+               "date_added": "13394016471755874",
+               "date_last_used": "0",
+               "guid": "90a0cc07-1282-4057-9a44-0658fc6a0314",
+               "id": "12",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "Overview (Java Platform SE 8 )",
+               "type": "url",
+               "url": "https://docs.oracle.com/javase/8/docs/api/"
+            }, {
+               "date_added": "13405155512751312",
+               "date_last_used": "0",
+               "guid": "57bbb977-010d-4f38-937f-2cedd6a5c353",
+               "id": "37",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "India Learning Dashboard - Employee View - Power BI",
+               "type": "url",
+               "url": "https://app.powerbi.com/groups/me/reports/9d09920e-b1b5-47b3-9fc3-a04709760a17/ReportSectione40b915ddbdf2a502def?ctid=76a2ae5a-9f00-4f6b-95ed-5d33d77c4d61&experience=power-bi"
+            }, {
+               "date_added": "13405770807365627",
+               "date_last_used": "13407247960698442",
+               "guid": "60a64537-f4ca-467b-90f5-8a679ad6b79b",
+               "id": "43",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "GETSUCCESS",
+               "type": "url",
+               "url": "https://performancemanager5.successfactors.eu/sf/activities?bplte_company=capgemitecP3&_s.crb=oSb%252bEof2wuDD58dECgYXUc5qNksM9vWG58Wa%252bZrNdU4%253d#/activityList"
+            }, {
+               "date_added": "13406636218046431",
+               "date_last_used": "13407327784375107",
+               "guid": "52c83f86-66c1-4997-ac7c-db5bc55fac52",
+               "id": "49",
+               "meta_info": {
+                  "power_bookmark_meta": ""
+               },
+               "name": "SuccessFactors: Home",
+               "type": "url",
+               "url": "https://performancemanager5.successfactors.eu/sf/home?bplte_company=capgemitecP3&_s.crb=D16nx%2b0mfeSGEtBiQz%2fEUp36tVARC9UX3%2boVtxNZH%2fY%3d"
+            } ],
+            "date_added": "13394016391462222",
+            "date_last_used": "0",
+            "date_modified": "13406636218046431",
+            "guid": "e51da1a1-c673-4e46-a3e5-655a99d99853",
+            "id": "11",
+            "name": "Learning",
+            "type": "folder"
+         }, {
+            "date_added": "13394278550676366",
+            "date_last_used": "13407922589630466",
+            "guid": "7b70d77f-d85e-46ba-ba27-275cf3994e9e",
+            "id": "18",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "Microsoft Power BI",
+            "type": "url",
+            "url": "https://app.powerbi.com/reportEmbed?reportId=d61309da-9f7f-4624-9a58-2eea16889962&appId=6f4ae522-2fd8-45ca-a804-2ed5d4a8e8af&autoAuth=true&ctid=76a2ae5a-9f00-4f6b-95ed-5d33d77c4d61"
+         }, {
+            "date_added": "13397832103118166",
+            "date_last_used": "13400061341375274",
+            "guid": "9237410d-46fb-470f-8239-811eab880174",
+            "id": "24",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "Course: Java 21, Java 17, Java 11, Java 8 (adv.) and Spring Boot 3 | Udemy Business",
+            "type": "url",
+            "url": "https://capgemini.udemy.com/course/ocp11_from_oca8/learn/lecture/29853950#overview"
+         }, {
+            "date_added": "13397832219214651",
+            "date_last_used": "13402681882875088",
+            "guid": "802c9e72-8673-4b99-aca7-66563be6a9ac",
+            "id": "25",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "Low Level System Design, Design Patterns & SOLID Principles | Udemy Business",
+            "type": "url",
+            "url": "https://capgemini.udemy.com/course/low-level-system-design/#overview"
+         }, {
+            "date_added": "13402392601921950",
+            "date_last_used": "13402404127125532",
+            "guid": "42a61d1a-4066-4755-8292-8aed5d88c7e1",
+            "id": "31",
+            "meta_info": {
+               "power_bookmark_meta": ""
+            },
+            "name": "SF Training_Plan_22_Jul_2025.xlsx",
+            "type": "url",
+            "url": "https://capgemini-my.sharepoint.com/:x:/r/personal/g_sai-karthik_capgemini_com/_layouts/15/Doc.aspx?sourcedoc=%7B73E7BE88-14D2-4B9E-8F21-C16A085C16EF%7D&file=SF%20Training_Plan_22_Jul_2025.xlsx&wdOrigin=TEAMS-MAGLEV.p2p_ns.rwc&action=default&mobileredirect=true"
+         } ],
+         "date_added": "13393927601876911",
+         "date_last_used": "0",
+         "date_modified": "13405155512751312",
+         "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+         "id": "1",
+         "name": "Bookmarks bar",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13393927601876916",
+         "date_last_used": "0",
+         "date_modified": "13393934422769017",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "Other bookmarks",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13393927601876918",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "Mobile bookmarks",
+         "type": "folder"
+      }
+   },
+   "version": 1
+}
