@@ -1,0 +1,1 @@
+SELECT accId, Accname FROM ACCOUNT Where Industry= ' Technology' & Limit 5;
