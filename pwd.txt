@@ -1,0 +1,78 @@
+List<Integer> numbers = Arrays.asList(1,47,8,9,6);
+
+List<Integer> newNum= numbers.stream().filter(n->n/2==0).collect(Collectors.toList());
+
+
+
+Install the Dashboard Pal component in your Trailhead Playground using one of these methods
+Package ID: 04t3Y0000018TkG
+AppExchange link: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000Ecs3hUAB
+
+
+
+deeptisukkipuli@playful-narwhal-nijti0.com
+
+AccountOwnerUpdateBatch
+https://curious-raccoon-oi09d7-dev-ed.trailblaze.my.salesforce-setup.com/lightning/setup/ManageUsers/page?address=%2F005d200000JqT6D%3Fnoredirect%3D1%26isUserEntityOverride%3D1
+
+https://curious-raccoon-oi09d7-dev-ed.trailblaze.my.salesforce-setup.com/lightning/setup/ManageUsers/page?address=%2F005d200000JqT7x%3Fnoredirect%3D1%26isUserEntityOverride%3D1
+
+https://curious-raccoon-oi09d7-dev-ed.trailblaze.my.salesforce-setup.com/lightning/setup/ManageUsers/page?address=%2F005d200000LhIAT%3Fnoredirect%3D1%26isUserEntityOverride%3D1
+
+deepthi.pulisai@contractor.axaxl.com- uF7GCeZFLgXlUD 
+https://onespace.axaxl.com
+X181879
+
+
+mediassist: Deepthimed@2026
+meal: Deepthimeal@2026
+
+
+oneaccount - Salesforce@axaxl2026
+
+INC28867913
+
+
+https://www.crsinfosolutions.com/what-is-the-difference-between-salesforce-apex-and-java/
+
+https://curious-raccoon-oi09d7-dev-ed.trailblaze.my.salesforce-setup.com/lightning/setup/EnhancedProfiles/page?address=%2F00ed200000GIBdJ
+
+https://trailhead.salesforce.com/content/learn/modules/starting_force_com
+
+deeptisukkipuli@wise-koala-3up7oo.com - lwcCap123
+
+lwc new: deeptisukkipuli@empathetic-badger-drpn19.com - lwcCap@123
+
+weather - Capgemini@2025
+
+system - PUDEEPTH - AXAcapgemini@2026
+
+resilient fox - deeptisukkipuli@curious-raccoon-oi09d7.com - salesforce2026
+
+apikey default: 4fe37866bf0f2cdcb5841fe68a923b7e
+
+puli-sai.deepthi.833ebd983535@agentforce.com - Salesforce@2025 or 6
+
+apikey weatherapi 2d91746b107004acdd4c0d4b2b32ef96
+
+linkedin2025
+
+
+<lightning-button 
+        variant="base"
+        label="Add" 
+        onclick={changeHandlerAdd} 
+      ></lightning-button>
+
+      <lightning-button 
+        variant="base"
+        label="Multiply" 
+        onclick={changeHandlerMul} 
+      ></lightning-button>
+
+imp : onvue: accessCode=623-682-664 locale=en-US clickNum=558993569133357
+
+
+
+
+
