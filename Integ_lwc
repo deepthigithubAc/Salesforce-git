@@ -1,0 +1,1546 @@
+Salesforce Integration Interview Questions (Inbound & Outbound):
+Integration is the process of exchanging data between Salesforce and external systems
+
+Inbound Integration
+External systems send an data or requests to salesforce.
+Complete Inbound REST Integration Steps
+Step 1:
+Create Apex rest API
+@RestResource(urlMapping='/customer/*')
+global with sharing class CustomerAPI {
+    @HttpPost
+    global static Map<String, Object> createCustomer() {
+        Map<String,Object> response = new Map<String,Object>();
+        try {
+            RestRequest req = RestContext.request;
+            CustomerWrapper data =
+                (CustomerWrapper)JSON.deserialize(
+                  req.requestBody.toString(),
+                  CustomerWrapper.class
+                );
+          Account acc = new Account(
+               Name = data.accountName,
+               Phone = data.phone
+           );
+            insert acc;
+            response.put('status', 'SUCCESS');
+            response.put('recordId', acc.Id);
+        } 
+      catch (Exception ex) {
+            response.put('status', 'FAILED');
+            response.put('error', ex.getMessage());
+        }
+        return response;
+    }
+    global class CustomerWrapper {
+        public String accountName;
+        public String phone;
+    }
+}
+
+Step 2: Create Connected App
+	Enable: Plain Text
+	OAuth Settings: Add OAuth Scopes
+	Plain Text
+	full
+	api
+	refresh_token
+
+Step 3: Get Client Credentials
+	Consumer Key
+	Consumer Secret
+
+Step 4: Authentication
+Using OAuth 2.0
+External application requests token.
+HTTP:
+POST
+•	/services/oauth2/token
+Request:
+•	grant_type=password
+•	client_id=XXXX
+•	client_secret=XXXX
+•	username=user@salesforce.com
+•	password=password+securitytoken
+Response
+JSON
+{
+   "access_token":"00Dxx000..."
+}
+Step 5: 
+External system will call REST API
+Step 6: Salesforce Receives Request
+•	Request Received
+↓
+•	Apex REST Method Executes
+↓
+•	JSON Deserialized
+↓
+•	Account Record Created
+↓
+•	Response Returned
+
+Outbound integration
+Outbound Integration is when Salesforce sends data to an external system
+Business Requirement
+Whenever an Opportunity is marked as Closed Won:
+I.	Salesforce sends Opportunity details to SAP.
+II.	SAP creates an Order.
+III.	SAP sends Order Number.
+IV.	Salesforce stores Order Number.
+
+Step-by-Step Outbound Integration
+Step 1: Create Named Credential
+Navigate
+Setup
+→ Named Credentials
+→ New
+
+Step 2: Create Apex Callout Class
+public with sharing class SAPService {
+    public static void sendOpportunity(Opportunity opp){
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('callout:SAP_API/orders');
+        req.setMethod('POST');
+        req.setHeader('Content-Type','application/json');
+        Map<String,Object> payload =
+            new Map<String,Object>();
+        payload.put('opportunityId',opp.Id);
+        payload.put('amount',opp.Amount);
+        req.setBody(JSON.serialize(payload));
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+        System.debug(res.getBody());
+    }
+}
+Step 3: Trigger the Callout
+trigger OpportunityTrigger on Opportunity(after update){
+    for(Opportunity opp : Trigger.new){
+        Opportunity oldOpp =
+            Trigger.oldMap.get(opp.Id);
+        if(opp.StageName == 'Closed Won'
+          && oldOpp.StageName != 'Closed Won'){
+             System.enqueueJob(
+                 new OpportunityQueueable(opp.Id)
+             );
+        }
+    }
+}
+Step 4: Use Queueable Apex (Best Practice)
+public class OpportunityQueueable
+implements Queueable, Database.AllowsCallouts{
+    private Id oppId;
+    public OpportunityQueueable(Id oppId){
+        this.oppId = oppId;
+    }
+    public void execute(QueueableContext qc){
+        Opportunity opp = [
+            SELECT Id, Amount
+            FROM Opportunity
+            WHERE Id = :oppId
+        ];
+        SAPService.sendOpportunity(opp);
+    }
+}
+Step 5: Send Request
+Payload sent to SAP:
+{
+   "opportunityId":"006xx000001ABC",
+   "amount":50000
+}
+Step 6: Receive Response
+SAP Response:
+{
+   "status":"SUCCESS",
+   "orderNumber":"ORD12345"
+}
+Step 7: Update Salesforce
+if(res.getStatusCode() == 200){
+    Map<String,Object> result =
+        (Map<String,Object>)
+        JSON.deserializeUntyped(
+            res.getBody()
+        );
+    String orderNo =
+        (String)result.get('orderNumber');
+}
+
+
+
+
+
+
+
+
+LWC (Lightning Web Components)
+Lightning Web Components (LWC) is a modern UI framework built on web standards such as:
+	HTML
+	JavaScript
+	CSS
+	Web Components
+	ES6+
+It is used to build reusable Salesforce UI components.
+Q: Why is LWC faster than Aura?
+Answer: LWC leverages native browser features and Web Components instead of a framework abstraction layer, resulting in better performance.
+
+Data Binding
+Data synchronization between JS and HTML.
+Example
+JS
+name='Harshitha';
+HTML
+<template>
+    <p>{name}</p>
+</template>
+Output
+Harshitha
+Property Binding
+Example
+JS
+welcomeMessage='Welcome to LWC';
+HTML
+<lightning-input value={welcomeMessage}></lightning-input>
+
+Event Handling
+Respond to user actions.
+HTML
+<lightning-button
+    label="Click"
+    onclick={handleClick}>
+</lightning-button>
+JS
+handleClick(){
+   alert('Button Clicked');
+}
+Conditional Rendering
+Display content based on condition.
+JS
+showMessage=true;
+HTML
+<template lwc:if={showMessage}>
+   Success
+</template>
+<template lwc:else>
+   Failed
+</template>
+
+Iteration
+Displaying list data.
+JS
+accounts=[
+    {id:1,name:'TCS'},
+    {id:2,name:'Infosys'}
+];
+
+HTML
+
+<template for:each={accounts}
+          for:item="acc">
+        <p key={acc.id}>
+            {acc.name}
+        </p>
+</template>
+
+OUTPUT
+TCS
+Infosys
+
+Decorators in LWC (Lightning Web Components) - Detailed Interview Explanation
+Decorators are special annotations (prefixed with @) used in LWC to add functionality to properties and methods.
+1. @api Decorator
+Used to expose a property or method to a parent component.
+Use Cases
+•	Parent → Child communication
+•	Expose methods publicly
+•	Receive data from record pages
+
+Example 1: Parent to Child Communication
+
+
+
+Child JS
+import { LightningElement, api } from 'lwc';
+export default class ChildComponent extends LightningElement {
+    @api message;
+}
+Child HTML
+<template>
+    <p>{message}</p>
+</template>
+
+Parent HTML
+<c-child-component message="Hello Child"></c-child-component>
+
+Example 2: Public Method
+Child JS
+import { LightningElement, api } from 'lwc';
+export default class Child extends LightningElement {
+    @api
+    refreshData() {
+        console.log('Refreshing...');
+    }
+}
+
+Parent JS
+handleClick() {
+    this.template.querySelector('c-child')
+        .refreshData();
+}
+Q: Can parent access child property without @api?
+No.
+Only properties and methods marked with @api can be accessed from outside the component.
+Record Page Example
+When component is placed on record page:
+@api recordId;
+Salesforce automatically supplies recordId.
+2. @track Decorator
+	Whenever a value changes, UI automatically refreshes.
+	For primitive variables, no need for @track.
+
+Q: Is @track mandatory in LWC?
+No.
+Only for observing changes inside complex objects/arrays in certain scenarios.
+Q: Is @track used for primitive variables?
+No.
+Primitives are reactive by default.
+
+3. @wire Decorator
+Used to call Salesforce data reactively.
+Can call:
+•	Apex methods
+•	LDS
+•	UI API
+•	Current page reference
+
+@wire with Apex
+Apex:
+public with sharing class AccountController {
+    @AuraEnabled(cacheable=true)
+    public static List<Account> getAccounts(){
+        return [
+            SELECT Id, Name
+            FROM Account
+        ];
+    }
+}
+LWC: JS
+import { LightningElement, wire } from 'lwc';
+import getAccounts from '@salesforce/apex/AccountController.getAccounts';
+export default class AccountList extends LightningElement {
+    @wire(getAccounts)
+    accounts;
+}
+HTML
+<template>
+<template if:true={accounts.data}>
+    <template for:each={accounts.data}
+              for:item="acc">
+        <p key={acc.Id}>
+            {acc.Name}
+        </p>
+    </template>
+</template>
+</template>
+
+Wire with Function
+JS
+@wire(getAccounts)
+wiredAccounts({error,data}){
+    if(data){
+        this.accounts=data;
+    }
+    else if(error){
+        console.log(error);
+    }
+}
+
+Property vs Function Wire
+Property when to simply display and Function when we need custom logic, Manipulating data, error handling and refresh apex
+Function wire is more flexible than property wire.
+
+
+Reactive Parameters
+@wire(getAccounts,{
+    industry:'$industry'
+})
+accounts;
+Notice $.
+When industry changes it automatically re executes
+
+Wire LDS Example
+No Apex needed.
+import {getRecord } from 'lightning/uiRecordApi';
+{
+@api recordId;
+@wire(getRecord,{
+   recordId:'$recordId',
+   fields:['Account.Name']
+})
+account;
+}
+
+Wire VS imperative call
+@wire 
+@wire(getAccounts)
+accounts;
+Characteristics
+•	Automatic execution
+•	Reactive
+•	Read operations only
+•	cacheable=true mandatory
+
+
+Imperative
+getAccounts()
+.then(result=>{
+   this.accounts=result;
+});
+
+
+Characteristics
+•	Manual execution
+•	Not reactive
+•	Works with DML
+•	Better control
+
+Life Cycle Hooks
+Lifecycle hooks are special JavaScript methods that execute automatically at different stages of a component's life.
+LWC Lifecycle Flow
+1.	constructor()
+↓
+2.	connectedCallback()
+↓
+3.	render()
+↓
+4.	renderedCallback()
+↓
+5.	(User Interaction)
+↓
+6.	renderedCallback()
+↓
+7.	disconnectedCallback()
+↓
+8.	errorCallback()
+
+1. constructor()
+This is the first method executed when the component is created.
+Purpose
+•	Initialize variables
+•	Set default values
+•	Call super()
+Syntax
+import { LightningElement } from 'lwc';
+export default class Demo extends LightningElement {
+    constructor() {
+        super();
+        console.log('Constructor Called');
+    }
+}
+
+2. connectedCallback()
+Called when component is inserted into the DOM.
+Very commonly used in projects.
+Purpose
+•	Call APIs
+•	Fetch data
+•	Register listeners
+•	Setup component
+
+Syntax
+connectedCallback() {
+    console.log('Connected');
+}
+******************************
+import { LightningElement } from 'lwc';
+export default class Employee extends LightningElement {
+    employees;
+    connectedCallback() {
+        fetchEmployees()
+            .then(result => {
+                this.employees = result;
+            });
+    }
+}
+
+Real project Usage:
+a) Load Initial Data
+connectedCallback() {
+   this.loadAccounts();
+}
+b)Subscribe to LMS
+connectedCallback() {
+   this.subscription =
+      subscribe(
+         messageContext,
+         CHANNEL,
+         handler
+      );
+}
+
+Q: Can connectedCallback execute multiple times?
+Yes.
+Examples:
+•	Component removed and added again
+•	Navigation between pages
+•	Conditional rendering
+
+3. render()
+•	Rarely used in projects.
+•	Called before component rendering.
+Purpose
+Determines which template should be rendered.
+Q: Is render() commonly used?
+No.
+Mostly used when switching between multiple templates dynamically.
+4. renderedCallback()
+Runs after component is rendered.
+________________________________________
+Purpose
+•	DOM access
+•	Third-party libraries
+•	Styling adjustments
+•	Post-render operations
+
+Syntax:
+renderedCallback() {
+    console.log('Rendered');
+}
+
+DOM access:
+renderedCallback() {
+   const input =
+      this.template.querySelector(
+         'lightning-input'
+      );
+   console.log(input);
+}
+5. disconnectedCallback()
+Called when component is removed from DOM.
+________________________________________
+Purpose
+Cleanup activities.
+
+Syntax:
+disconnectedCallback() {
+   console.log('Component Removed');
+}
+Unsubscribe LMS
+JavaScript
+disconnectedCallback() {
+ 
+unsubscribe(this.subscription);
+ 
+}
+________________________________________
+Remove Event Listener
+JavaScript
+window.removeEventListener(
+'resize',
+this.resizeHandler
+);
+Stop Timers
+JavaScript
+clearInterval(this.timer);
+
+Q: Why use disconnectedCallback?
+To prevent:
+•	Memory leaks
+•	Unnecessary listeners
+•	Active subscriptions
+
+6. errorCallback()
+Used to catch child component errors.
+Syntax
+errorCallback(error, stack) {
+   console.error(error);
+}
+Parent:
+JavaScript
+errorCallback(error, stack){
+ 
+console.log(error);
+console.log(stack);
+ 
+}
+Child throws error:
+JavaScript
+throw new Error('Something Wrong');
+Parent captures it.
+
+
+Parent to Child Communication
+Using @api property.
+________________________________________
+Parent HTML
+<c-child name="Harshitha"></c-child>
+Child JS
+@api name;
+Child HTML
+<p>{name}</p>
+Output
+Harshitha
+
+Child to Parent Communication
+Using Custom Events.
+Child JS
+handleSave(){
+  const event =
+      new CustomEvent('save',{
+          detail:'Record Saved'
+      });
+   this.dispatchEvent(event);
+}
+________________________________________
+Parent HTML
+HTML
+<c-child onsave={handleSave}></c-child>
+________________________________________
+Parent JS
+JavaScript
+handleSave(event){
+ 
+console.log(event.detail);
+ 
+}
+
+Q: How can child communicate with parent?
+Answer:
+Using
+•	Custom Events
+•	PubSub (old)
+•	LMS
+Sibling communication:
+Sibling communication means two child components communicate with each other, but they do not have a direct relationship.
+Method 1: Parent Mediator Pattern
+The parent acts as a middleman.
+Child A
+|
+| Event
+↓
+Parent
+|
+| @api Property
+↓
+Child B
+
+Step 1: Child A Sends Event(Custom event)
+Step 2: Parent Receives
+Step 3: Child B Receives(@api)
+
+Advantages
+✅ Simple
+✅ Easy to Debug
+✅ Best for Parent-Child hierarchy
+✅ Most commonly used
+Q: When should Parent Mediator be used?
+Answer:
+When sibling components belong to the same parent component.
+Method 2: Lightning Message Service (LMS)
+You have two completely independent components:
+Component 1: Account Selector (Publisher)
+User clicks a button and selects an Account.
+Component 2: Account Details (Subscriber)
+Should automatically receive the Account Id and display details.
+
+AccountSelector (Publisher)
+           |
+           | Publish Message
+           ↓
+   Message Channel
+           ↓
+AccountDetails (Subscriber)
+
+
+Step 1: Create Message Channel
+force-app
+└── main
+└── default
+└── messageChannels
+└── AccountMessageChannel.messageChannel-meta.xml
+
+AccountMessageChannel.messageChannel-meta.xml
+XML
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningMessageChannel
+xmlns="http://soap.sforce.com/2006/04/metadata">
+ 
+<masterLabel>Account Channel</masterLabel>
+ 
+<isExposed>true</isExposed>
+ 
+<lightningMessageFields>
+<fieldName>accountId</fieldName>
+<description>Selected Account Id</description>
+</lightningMessageFields>
+ 
+</LightningMessageChannel>
+
+Step 2: Publisher Component
+accountSelector.html
+
+
+<template>
+    <lightning-button
+        label="Select Account"
+        onclick={handleSelect}>
+    </lightning-button>
+</template>
+accountSelector.js
+import { LightningElement, wire } from 'lwc';
+ 
+import {
+publish,
+MessageContext
+} from 'lightning/messageService';
+ 
+import ACCOUNT_CHANNEL
+from '@salesforce/messageChannel/AccountMessageChannel__c';
+ 
+export default class AccountSelector
+extends LightningElement {
+ 
+@wire(MessageContext)
+messageContext;
+ 
+handleSelect() {
+ 
+const payload = {
+ 
+accountId:
+'001XXXXXXXXXXXX'
+};
+ 
+publish(
+this.messageContext,
+ACCOUNT_CHANNEL,
+payload
+);
+}
+}
+Step 3: Subscriber Component
+accountDetails.html
+<template> 
+<p>
+Selected Account:
+{accountId}
+</p> 
+</template>
+accountDetails.js
+import { LightningElement, wire }
+from 'lwc';
+import {
+    subscribe,
+    MessageContext
+} from 'lightning/messageService';
+import ACCOUNT_CHANNEL
+from '@salesforce/messageChannel/AccountMessageChannel__c';
+export default class AccountDetails
+extends LightningElement {
+    accountId;
+    subscription = null;
+    @wire(MessageContext)
+    messageContext;
+    connectedCallback() {
+        this.subscribeToChannel();
+    }
+    subscribeToChannel() {
+        if (this.subscription) {
+            return;
+        }
+        this.subscription = subscribe(
+            this.messageContext,
+            ACCOUNT_CHANNEL,
+            (message) => {
+                this.handleMessage(message);
+            }
+        );
+    }
+    handleMessage(message) {
+        this.accountId =
+            message.accountId;
+    }
+}
+Q. Can one publisher have multiple subscribers?
+✅ Yes
+
+Grandparent  and Grandchild communication
+Scenario 1: Child → Grandparent Communication
+This is the most common interview question.
+Since Child cannot directly access Grandparent, we use event bubbling.
+Flow
+Plain Text
+Child
+↓ Custom Event
+Parent
+↓ Event Bubble
+GrandParent
+
+Why bubbles and composed?
+JavaScript
+{
+bubbles : true,
+composed : true
+}
+
+bubbles
+Allows event to move upward.
+Plain Text
+Child → Parent → GrandParent
+	
+composed
+Allows event to cross shadow DOM boundaries.
+Without it:
+JavaScript
+composed:false
+Grandparent may not receive the event.
+Scenario 2: Grandparent → Child Communication
+Flow:
+GrandParent
+↓
+@api Property
+↓
+Parent
+↓
+@api Property
+↓
+Child
+
+Scenario 3: Child Calls Grandparent Method
+This is generally not recommended.
+Instead:
+Child
+↓ Event
+Parent
+↓ Event
+GrandParent
+Grandparent handles logic.
+
+Imperative call
+Used when user action needed.
+import getAccounts
+from '@salesforce/apex/AccountController.getAccounts';
+handleClick(){
+   getAccounts()
+      .then(result=>{
+      })
+      .catch(error=>{
+      });
+}
+Wire vs Imperative
+Wire	Imperative
+Automatic	Manual
+Reactive	Non Reactive
+Cacheable only	Cacheable/non-cacheable
+Read operation	Read + DML
+
+Lightning Data Service (LDS)
+Lightning Data Service is a client-side service that provides access to Salesforce records and metadata without requiring Apex, while automatically enforcing security and caching data for better performance.
+
+
+Why LDS?
+Salesforce provides LDS because:
+✅ No Apex required
+✅ Respects CRUD/FLS automatically
+✅ Better Performance
+✅ Built-in Caching
+✅ Automatic Record Refresh
+✅ Less Code
+Ways to Use LDS
+There are two approaches:
+1. Base Lightning Components
+Examples:
+HTML
+	lightning-record-form
+
+	lightning-record-view-form
+
+	lightning-record-edit-form
+ 
+________________________________________
+2. UI Record API
+Examples:
+JavaScript
+	getRecord
+	getFieldValue
+	createRecord
+	updateRecord
+	deleteRecord
+
+1. lightning-record-form
+Simplest LDS implementation.
+No Apex. No JavaScript.
+________________________________________
+View Existing Record
+HTML
+<lightning-record-form
+record-id={recordId}
+object-api-name="Account"
+layout-type="Full"
+mode="view">
+</lightning-record-form>
+________________________________________
+Edit Record
+HTML
+<lightning-record-form
+record-id={recordId}
+object-api-name="Account"
+layout-type="Full"
+mode="edit">
+</lightning-record-form>
+________________________________________
+Create Record
+HTML
+<lightning-record-form
+object-api-name="Account"
+mode="edit">
+</lightning-record-form>
+
+2. lightning-record-view-form
+Used for a customized record display.
+________________________________________
+Example
+HTML
+<lightning-record-view-form
+record-id={recordId}
+object-api-name="Account">
+ 
+<lightning-output-field
+field-name="Name">
+</lightning-output-field>
+ 
+<lightning-output-field
+field-name="Industry">
+</lightning-output-field>
+ 
+</lightning-record-view-form>
+________________________________________
+Interview Use Case
+When you want:
+Custom Layout
++
+Read Only
+ 
+________________________________________
+3. lightning-record-edit-form
+Used for customized editing.
+________________________________________
+Example
+HTML
+<lightning-record-edit-form
+object-api-name="Account"
+record-id={recordId}>
+ 
+<lightning-input-field
+field-name="Name">
+</lightning-input-field>
+ 
+<lightning-input-field
+field-name="Phone">
+</lightning-input-field>
+ 
+<lightning-button
+type="submit"
+label="Save">
+</lightning-button>
+ 
+</lightning-record-edit-form>
+________________________________________
+LDS Using UI Record API
+getRecord
+Used to retrieve record data.
+import { LightningElement, api, wire }
+from 'lwc';
+import { getRecord }
+from 'lightning/uiRecordApi';
+const FIELDS = [
+   'Account.Name',
+   'Account.Phone'
+];
+export default class AccountDemo
+extends LightningElement {
+   @api recordId;
+   @wire(getRecord,{
+      recordId:'$recordId',
+      fields:FIELDS
+   })
+   account;
+}
+getFieldValue Example
+JavaScript
+import { getFieldValue }
+from 'lightning/uiRecordApi';
+ 
+JavaScript
+get accountName() {
+ 
+return getFieldValue(
+this.account.data,
+NAME_FIELD
+);
+}
+Create Record Using LDS
+No Apex required.
+________________________________________
+Example
+JavaScript
+import { createRecord }
+from 'lightning/uiRecordApi';
+ 
+const fields = {};
+ 
+fields.Name = 'ABC Company';
+ 
+const recordInput = {
+apiName:'Account',
+fields
+};
+ 
+createRecord(recordInput)
+.then(result => {
+ 
+console.log(result.id);
+ 
+})
+.catch(error => {
+ 
+console.error(error);
+ 
+});
+________________________________________
+Update Record Using LDS
+JavaScript
+import { updateRecord }
+from 'lightning/uiRecordApi';
+JavaScript
+const fields = {};
+ 
+fields.Id='001ABC';
+fields.Name='Updated Account';
+ 
+updateRecord({fields})
+.then(()=>{
+console.log('Updated');
+});
+________________________________________
+Delete Record Using LDS
+JavaScript
+import { deleteRecord }
+from 'lightning/uiRecordApi';
+JavaScript
+deleteRecord(recordId)
+.then(()=>{
+console.log('Deleted');
+});
+
+Navigation Service
+Navigate to records/pages.
+JavaScript
+import { NavigationMixin }
+from 'lightning/navigation';
+________________________________________
+Open Account Record:
+JavaScript
+this{
+ 
+type:'standard__recordPage',
+ 
+attributes:{
+ 
+recordId:'001xx',
+ 
+objectApiName:'Account',
+ 
+actionName:'view'
+}
+ 
+};
+Toast Messages
+Display notifications.
+JavaScript
+import { ShowToastEvent }
+from 'lightning/platformShowToastEvent';
+JavaScript
+this.dispatchEvent(
+new ShowToastEvent({
+ 
+title:'Success',
+ 
+message:'Record Saved',
+ 
+variant:'success'
+})
+);
+Variants:
+•	success
+•	error
+•	warning
+•	info
+
+Getter Methods
+A getter is a JavaScript method used to dynamically calculate and return a value whenever the component re-renders.
+Used for dynamic calculation.
+JavaScript
+get fullName(){
+ 
+return this.firstName+
+' '+
+this.lastName;
+}
+HTML
+<p>{fullName}</p>
+
+Promises in LWC
+A Promise is a JavaScript object that represents the eventual completion (success) or failure of an asynchronous operation.
+In LWC, Promises are commonly used when:
+•	Calling Apex imperatively
+•	Loading external libraries
+•	Using LDS APIs (createRecord, updateRecord)
+•	Making asynchronous operations
+
+Promise States
+A Promise has 3 states:
+1. Pending
+Operation is still running.
+Plain Text
+Promise Created
+↓
+Pending
+
+________________________________________
+2. Fulfilled
+Operation completed successfully.
+Plain Text
+Pending
+↓
+Fulfilled
+ 
+________________________________________
+3. Rejected
+Operation failed.
+Plain Text
+Pending
+↓
+Reject
+
+
+
+
+
+Imperative Apex Call Using Promise
+This is the most common LWC interview scenario.
+Apex
+Apex
+@AuraEnabled
+public static List<Account> getAccounts(){
+ 
+return [
+SELECT Id, Name
+FROM Account
+];
+}
+________________________________________
+LWC
+JavaScript
+import getAccounts
+from '@salesforce/apex/AccountController.getAccounts';
+ 
+handleLoad() {
+ 
+getAccounts()
+ 
+.then(result => {
+ 
+this.accounts = result;
+ 
+})
+
+Promise Chain
+Multiple asynchronous operations can be chained.
+JavaScript
+getAccounts()
+ 
+.then(result => {
+ 
+console.log('Accounts Loaded');
+ 
+return getContacts();
+ 
+})
+ 
+.then(result => {
+ 
+console.log('Contacts Loaded');
+ 
+})
+ 
+.catch(error => {
+ 
+console.error(error);
+ 
+});
+________________________________________
+Execution Flow
+getAccounts()
+↓
+Success
+↓
+getContacts()
+↓
+Success
+↓
+Finished
+
+ 
+.catch(error => {
+ 
+console.error(error);
+ 
+});
+}
+Promise.all()
+Very important for experienced interviews.
+Used when multiple async calls can run simultaneously.
+________________________________________
+Example
+JavaScript
+Promise.all([
+getAccounts(),
+getContacts(),
+getOpportunities()
+])
+ 
+.then(results => {
+ 
+this.accounts = results[0];
+this.contacts = results[1];
+this.opportunities = results[2];
+ 
+})
+.catch(error => {
+ 
+console.error(error);
+ 
+});
+________________________________________
+Execution
+Plain Text
+getAccounts()
+getContacts()
+getOpportunities()
+ 
+Run Parallel
+↓
+All Complete
+↓
+then()
+________________________________________
+Benefit
+Faster than:
+JavaScript
+await getAccounts();
+await getContacts();
+await getOpportunities();
+because all requests execute in parallel.
+________________________________________
+Promise.race()
+Returns the first promise that finishes.
+JavaScript
+Promise.race([
+getAccounts(),
+getContacts()
+])
+ 
+.then(result => {
+ 
+console.log(result);
+ 
+});
+Whichever completes first wins.
+________________________________________
+Promise.finally()
+Runs always:
+✅ Success
+✅ Failure
+JS
+.finally(() => {
+ 
+this.isLoading = false;
+ 
+});
+Best use case:
+•	Hide Spinner
+•	Cleanup
+
+Q.  Explain Shadow DOM and Light DOM?
+Shadow DOM provides component encapsulation.
+Every LWC component gets its own private DOM, which prevents CSS and JavaScript from affecting other components.
+Eg. Component A doesn’t effect component B
+Advantages
+✅ Encapsulation
+✅ Better Security
+✅ Prevents CSS Conflicts
+✅ Reusable Components
+
+Light DOM
+Light DOM allows a component's content to participate in the regular document DOM structure.
+Advantages of Light DOM
+✅ Easier integration with third-party libraries
+✅ Better accessibility in some cases
+✅ Easier DOM querying
+✅ Better for analytics tools
+
+
+
+
+Shadow DOM vs Light DOM
+Feature	Shadow DOM	Light DOM
+Encapsulation	Yes	No
+CSS Isolation	Yes	No
+Security	High	Lower
+Third-party Library Access	Limited	Easy
+Default in LWC	Yes	No
+
+Q. How to optimize large data rendering?
+•	Implement Pagination / Infinite Scroll. 
+•	Retrieve only required fields. 
+•	Add server-side filtering. 
+•	Use LDS caching where applicable. 
+•	Use lightning datatable. 
+•	Avoid unnecessary rerenders. 
+•	Implement search debouncing. 
+•	Optimize SOQL queries.
+
+Q. How will you display 100K Records in LWC?
+1. Server-Side Pagination
+Load records in chunks.
+Apex
+SELECT Id, Name
+FROM Account
+LIMIT 100
+OFFSET 0
+Plain Text
+Page 1 → 100 Records
+Page 2 → 100 Records
+Page 3 → 100 Records
+________________________________________
+2. Infinite Scrolling 
+HTML
+<lightning-datatable
+enable-infinite-loading
+onloadmore={loadMoreData}>
+</lightning-datatable>
+Load:
+Plain Text
+First 100 Records
+↓
+User Scrolls
+↓
+Next 100 Records
+↓
+Next 100 Records
+________________________________________
+3. Server-Side Search & Filtering
+❌ Bad
+JavaScript
+Load 100k records
+Filter in JS
+✅ Good
+Apex
+SELECT Id, Name
+FROM Account
+WHERE Name LIKE :searchKey
+________________________________________
+4. Select Only Required Fields
+Apex
+SELECT Id, Name
+instead of
+Apex
+SELECT *
+________________________________________
+Interview One-Liner
+For 100K records, I would use server-side pagination or infinite scrolling, apply server-side filtering, and retrieve only required columns instead of loading all records into the browser.
+
+Pagination Vs infinite scrolling
+Comparison
+Feature	Pagination	Infinite Scroll
+Navigation	Easy	Difficult
+Performance	Better	Good
+Memory Usage	Low	Higher
+UX	Traditional	Modern
+Large Data	Excellent	Good
+
+How Do You Secure LWC?
+1. Object level security (CRUD)
+if(Schema.sObjectType.Account.isCreateable()){
+}
+
+2. field level security(FLS)
+Use:
+Apex
+Security.stripInaccessible()
+Example:
+Apex
+records = Security.stripInaccessible(
+AccessType.READABLE,
+records
+).getRecords();
+
+3. Sharing Rules
+4. Use LDS
+	
+How Do You Handle Errors in LWC?
+1. Apex error handing
+2, LWC error handling
+3. Toast message
+4. Imperative method error handling
+5. Aysnc/Await
+6. LMS/Subscription Cleanup Errors
+
+What tools do you use to debug LWC?
+•	Browser Console
+•	Network Tab
+•	Breakpoints
+•	Debugger Statement
+•	Apex Debug Logs
+•	Lightning Inspector
+
+How do you debug an Apex call from LWC?
+•	Console logs
+•	Network tab
+•	Apex Debug Logs
+•	Catch block
+
+How do you debug @wire methods?
+•	console.log(data);
+•	console.error(error);
+
+How do you debug lifecycle issues?
+console.log() inside
+•	constructor()
+•	connectedCallback()
+•	renderedCallback()
+•	disconnectedCallback()
+
+
+
+
+Q: If an Apex class is with sharing and called from LWC, but the user doesn't have access to the queried records, will it throw an error?
+Answer:
+No, with sharing respects Salesforce record-sharing rules. The query returns only records the user can access. If the user has no access, the query returns zero records (empty list). An exception occurs only when the code expects a single record and no record is returned, such as assigning a SOQL result directly to an SObject variable. with sharing controls record-level access, not CRUD/FLS security.
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
