@@ -1,4 +1,4 @@
-# Salesforce-git
+# SalesforceQUE-git
 
  
 hi Shaw, Aman..PFB questions asked in the interview - How to communicate between components in LWC
